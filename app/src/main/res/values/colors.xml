@@ -3,4 +3,10 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="s_obesity">#B80000</color> <!--roz pompejanski-->
+    <color name="obesity">#FFA500</color> <!--oranz-->
+    <color name="overweight">#F9E04B</color> <!--bahama yellow-->
+    <color name="normal">#00A693</color> <!--gryszpan-->
+    <color name="underweight">#3366CC</color> <!--lapis-lazuli-->
+
 </resources>

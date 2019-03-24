@@ -1,6 +1,7 @@
 package com.example.bmi.logic
 
 import logic.Bmi
+import java.lang.IllegalArgumentException
 
 class BmiForKgM(var mass: Int, var height: Int) : Bmi {
 
