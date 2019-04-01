@@ -8,7 +8,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.bmi"
-        minSdkVersion 21
+        minSdkVersion 26
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -33,4 +33,11 @@ dependencies {
     testImplementation 'io.kotlintest:kotlintest-runner-junit4:3.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
     implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+
+    //grupie for recycle view
+    implementation 'com.xwray:groupie:2.3.0'
+
+    //gson for serialize objects to shared preferences
+    implementation 'com.google.code.gson:gson:2.8.5'
 }

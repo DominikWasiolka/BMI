@@ -1,10 +1,12 @@
 package com.example.bmi
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.PersistableBundle
+import android.preference.PreferenceManager
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -13,25 +15,32 @@ import androidx.annotation.RequiresApi
 import com.example.bmi.logic.BmiForKgM
 import com.example.bmi.logic.BmiForLbIn
 import com.example.bmi.logic.BmiRange
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.android.synthetic.main.activity_main.*
 import logic.Bmi
 import java.lang.IllegalArgumentException
 import java.lang.NumberFormatException
 import java.text.DecimalFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
     var isUnitsKg : Boolean = true
     var last_bmi: Double = 0.0
-
+    //var prevResList:Queue<Result> = LinkedList <Result>()
+    var prevResList:Queue<Result> = LinkedList <Result>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
-
         val button = findViewById(R.id.button) as Button
         val info_button = findViewById(R.id.info_button) as ImageButton
+
+        //Get previous BMI Results
+        prevResList = getResults()
 
         button.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?){
@@ -76,6 +85,8 @@ class MainActivity : AppCompatActivity() {
                 (findViewById(R.id.bmi_status) as TextView).setText(bmiFullName)
                 (findViewById(R.id.bmiResult) as TextView).setTextColor(bmiColor)
                 (findViewById(R.id.bmiResult) as TextView).setText(bmiResRounded.toString())
+
+                addResult(iHeight, iMass, bmiResRounded, bmiColor)
             }
         })
 
@@ -85,8 +96,6 @@ class MainActivity : AppCompatActivity() {
                     openInfoActivity(last_bmi)
             }
         })
-
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -118,6 +127,11 @@ class MainActivity : AppCompatActivity() {
                     clearFields()
                 }
 
+                return super.onOptionsItemSelected(item)
+            }
+            R.id.previous -> {
+                //Toast.makeText(this, "item 1 is Selcted", Toast.LENGTH_SHORT).show()
+                openPrevResultsActivity()
                 return super.onOptionsItemSelected(item)
             }
 
@@ -167,6 +181,13 @@ class MainActivity : AppCompatActivity() {
         intent.putExtra(getString(R.string.bmi_value_key),bmi_value)
         startActivity(intent)
     }
+    fun openPrevResultsActivity() {
+        val intent = Intent(this, PreviousBMIs::class.java)
+        val resultType = object : TypeToken<LinkedList<Result>>() {}.type
+        val jsonResults = Gson().toJson(this.prevResList, resultType)
+        intent.putExtra("results", jsonResults)
+        startActivity(intent)
+    }
 
     fun clearFields(){
         last_bmi = 0.0
@@ -181,4 +202,47 @@ class MainActivity : AppCompatActivity() {
     fun getColor(name: String): Int {
         return resources.getColor(resources.getIdentifier(name, "color", packageName))
     }
+
+    private fun addResult(height:Int, weight:Int, bmi:Double, color: Int){
+        val date = LocalDateTime.now()
+        var formatter = DateTimeFormatter.ofPattern(getString(R.string.date_pattern))
+        val date_str = formatter.format(date)
+        var system = getString(R.string.lb_system)
+        if (isUnitsKg)
+            system =getString(R.string.kg_system)
+
+
+        val result = Result(height.toString(), weight.toString(),bmi.toString(), date_str, system, color)
+        if (this.prevResList.size<10)
+            this.prevResList.add(result)
+        else{
+            this.prevResList.poll()
+            this.prevResList.add(result)
+        }
+
+        saveResults()
+    }
+
+    fun saveResults(){
+        val resultType = object : TypeToken<LinkedList<Result>>() {}.type
+        val prefEditor = PreferenceManager.getDefaultSharedPreferences(this).edit()
+        val jsonString = Gson().toJson(this.prevResList,resultType)
+        prefEditor.putString("results", jsonString).apply()
+    }
+
+    fun getResults() : LinkedList<Result>{
+        val resultType = object : TypeToken<LinkedList<Result>>() {}.type
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val jsonString = preferences.getString("results",null)
+
+        return if(jsonString != null)
+            Gson().fromJson(jsonString, resultType)
+        else
+            LinkedList<Result>()
+    }
+
 }
+
+class Result(val height:String, val weight:String, val bmi:String, val date:String, val system:String, val color:Int){
+}
+//TODO add mode (ibs/inch or kg/cm)

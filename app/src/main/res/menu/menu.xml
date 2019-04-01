@@ -3,5 +3,6 @@
 
     <item android:id="@+id/about_button" android:title="About"/>
     <item android:id="@+id/ch_units" android:title="Change units"/>
+    <item android:id="@+id/previous" android:title="Previous BMIs"/>
 
 </menu>
